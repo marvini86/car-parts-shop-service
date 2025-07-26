@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS payment_details;
+DROP TABLE IF EXISTS item_categories;
+DROP TABLE IF EXISTS items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS users;
