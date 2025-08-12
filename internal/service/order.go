@@ -73,7 +73,7 @@ func (s *orderService) CreateOrder(ctx context.Context, orderCreate dto.OrderReq
 		}
 
 		// Save Order
-		if err := tx.WithContext(ctx).Create(&order).Error; err != nil {
+		if err = tx.WithContext(ctx).Create(&order).Error; err != nil {
 			return fmt.Errorf("failed to create order: %w", err)
 		}
 
@@ -84,7 +84,7 @@ func (s *orderService) CreateOrder(ctx context.Context, orderCreate dto.OrderReq
 			itemEntity.Quantity = item.Quantity
 			itemEntity.Price = item.Price
 			itemEntity.OrderID = order.ID
-			if err := tx.WithContext(ctx).Create(&itemEntity).Error; err != nil {
+			if err = tx.WithContext(ctx).Create(&itemEntity).Error; err != nil {
 				return fmt.Errorf("failed to create order item: %w", err)
 			}
 		}
@@ -96,7 +96,7 @@ func (s *orderService) CreateOrder(ctx context.Context, orderCreate dto.OrderReq
 		payment.CVV = orderCreate.PaymentDetails.CVV
 
 		// Save Payment Details
-		if err := tx.WithContext(ctx).Create(&payment).Error; err != nil {
+		if err = tx.WithContext(ctx).Create(&payment).Error; err != nil {
 			return fmt.Errorf("failed to create payment details: %w", err)
 		}
 
@@ -109,7 +109,7 @@ func (s *orderService) CreateOrder(ctx context.Context, orderCreate dto.OrderReq
 		address.Country = orderCreate.DeliveryAddress.Country
 
 		// Save Delivery Address
-		if err := tx.WithContext(ctx).Create(&address).Error; err != nil {
+		if err = tx.WithContext(ctx).Create(&address).Error; err != nil {
 			return fmt.Errorf("failed to create delivery address: %w", err)
 		}
 

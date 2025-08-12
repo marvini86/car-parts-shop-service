@@ -30,23 +30,32 @@ func (h *OrderHandler) InitRoutes(r *gin.RouterGroup) {
 }
 
 // GetOrderByID gets an order by ID
+// @Summary     Get order by ID
+// @Description Get order by ID
+// @Tags        Orders
+// @Produce     json
+// @Param       id  path     int     true  "Order ID"
+// @Success     200 {object} dto.OrderDto
+// @Router      /orders/{id} [get]
+// @Failure     500 {object} dto.ErrorResponseDto
+// @Failure     404 {object} dto.ErrorResponseDto
 func (h *OrderHandler) GetOrderByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	ctx := c.Request.Context()
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponseDto{Message: err.Error()})
 		return
 	}
 
 	order, err := h.orderService.GetOrderByID(ctx, id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseDto{Message: err.Error()})
 		return
 	}
 
 	if order.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		c.JSON(http.StatusNotFound, dto.ErrorResponseDto{Message: "Order not found"})
 		return
 	}
 
@@ -54,18 +63,27 @@ func (h *OrderHandler) GetOrderByID(c *gin.Context) {
 }
 
 // CreateOrder creates a new order
+// @Summary     Create order
+// @Description Create order
+// @Tags        Orders
+// @Produce     json
+// @Param       orderCreate  body     dto.OrderRequest  true  "Order request"
+// @Success     201 {object} dto.OrderDto
+// @Router      /orders [post]
+// @Failure     400 {object} dto.ErrorResponseDto
+// @Failure     500 {object} dto.ErrorResponseDto
 func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	var orderCreate dto.OrderRequest
 	ctx := c.Request.Context()
 
 	if err := c.ShouldBindJSON(&orderCreate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponseDto{Message: err.Error()})
 		return
 	}
 
 	order, err := h.orderService.CreateOrder(ctx, orderCreate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseDto{Message: err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, order)

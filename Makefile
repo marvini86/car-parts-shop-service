@@ -15,6 +15,9 @@ migrate_up:
 migrate_down:
 	migrate -database "postgres://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DB}?sslmode=disable" -path internal/db/migrations -verbose down
 
+swag:
+	swag init -g cmd/api/main.go
+
 build:
 	go build -o api cmd/api/main.go
 

@@ -3,43 +3,61 @@ package server
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	_ "github.com/marvini86/car-parts-shop-service/docs"
 	"github.com/marvini86/car-parts-shop-service/internal/handler"
 	"github.com/marvini86/car-parts-shop-service/internal/service"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
+	"log"
 	"os"
 )
 
 // ServerConfig represents the configuration for the server
 type ServerConfig struct {
-	db  *gorm.DB
-	gin *gin.Engine
+	db      *gorm.DB
+	gin     *gin.Engine
+	appPort string
 }
 
 // NewServerConfig creates a new ServerConfig instance
 func NewServerConfig(db *gorm.DB) *ServerConfig {
+	var apiPort string
+	if port, ok := os.LookupEnv("API_PORT"); ok {
+		log.Printf("Found APP_PORT environment variable, using value %s", port)
+		apiPort = port
+	} else {
+		log.Printf("API port not set, using default value %s", "8080")
+		apiPort = "8080"
+	}
+
 	return &ServerConfig{
-		db: db,
+		db:      db,
+		appPort: apiPort,
+		gin:     gin.Default(),
 	}
 }
 
-var apiPort string
-
 // Init initializes the server
-func (s *ServerConfig) Init() {
-	if port, ok := os.LookupEnv("API_PORT"); ok {
-		apiPort = port
-	}
-	s.gin = gin.Default()
-
+func (s *ServerConfig) Init() error {
 	s.initRoutes()
 
-	s.gin.Run(fmt.Sprintf(":%s", apiPort))
+	log.Printf("Starting server on port %s", s.appPort)
+
+	if err := s.gin.Run(fmt.Sprintf(":%s", s.appPort)); err != nil {
+		return fmt.Errorf("failed to start server: %w", err)
+	}
+
+	return nil
 }
 
 // initRoutes initializes the routes for the server
 func (s *ServerConfig) initRoutes() {
-	r := s.gin.Group("/api/v1")
+	r := s.gin
 
-	handler.NewItemHandler(service.NewItemService(s.db)).InitRoutes(r)
-	handler.NewOrderHandler(service.NewOrderService(s.db)).InitRoutes(r)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	rg := r.Group("/api/v1")
+
+	handler.NewItemHandler(service.NewItemService(s.db)).InitRoutes(rg)
+	handler.NewOrderHandler(service.NewOrderService(s.db)).InitRoutes(rg)
 }
